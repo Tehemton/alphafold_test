@@ -66,9 +66,10 @@ RUN wget -q -P /app/alphafold/alphafold/common/ \
 RUN pip3 install --upgrade pip \
     && pip3 install -r /app/alphafold/requirements.txt \
     && pip3 install --upgrade \
-      jax==0.2.14 \
-      jaxlib==0.1.69+cuda$(cut -f1,2 -d. <<< ${CUDA} | sed 's/\.//g') \
-      -f https://storage.googleapis.com/jax-releases/jax_releases.html
+    pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html 
+      # jax==0.2.14 \
+      # jaxlib==0.1.69+cuda$(cut -f1,2 -d. <<< ${CUDA} | sed 's/\.//g') \
+      # -f https://storage.googleapis.com/jax-releases/jax_releases.html
 
 # Apply OpenMM patch.
 WORKDIR /opt/conda/lib/python3.7/site-packages
@@ -83,8 +84,9 @@ RUN chmod u+s /sbin/ldconfig.real
 # ENTRYPOINT does not support easily running multiple commands, so instead we
 # write a shell script to wrap them up.
 WORKDIR /app/alphafold
-RUN echo $'#!/bin/bash\n\
-ldconfig\n\
-python /app/alphafold/run_alphafold.py "$@"' > /app/run_alphafold.sh \
-  && chmod +x /app/run_alphafold.sh
-ENTRYPOINT ["/app/run_alphafold.sh"]
+
+# RUN echo $'#!/bin/bash\n\
+# ldconfig\n\
+# python /app/alphafold/run_alphafold.py "$@"' > /app/run_alphafold.sh \
+#   && chmod +x /app/run_alphafold.sh
+# ENTRYPOINT ["/app/run_alphafold.sh"]

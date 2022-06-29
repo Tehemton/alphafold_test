@@ -1,4 +1,24 @@
+#make sure you have the following roles
+-
+-
+-
+-
+
 #Edited the run_alphafold.py file to separate the MSA search and structure prediction
 
-#Created a cheap pre-emptible VM instance on GCP
+#Created a cheap pre-emptible VM instance on GCP with http and https allowed
+	#udo apt-get update
+	#sudo apt-get install docker-ce docker-ce-cli containerd.io
+	#gcloud auth configure-docker us.gcr.io
+	#git clone https://github.com/deepmind/alphafold.git
+	#make changes to the run_alphafold.py file for separate MSA and Structure
+	#make changes in the docker file and commend out the last 2 commands
+	#cd alphafold/
+	#sudo chmod 666 /var/run/docker.sock
+	#docker build -f docker/Dockerfile -t alphafold .
+	#
+	#
+	#
+	#
+	#
 	#
