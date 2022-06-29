@@ -1,0 +1,4 @@
+#Edited the run_alphafold.py file to separate the MSA search and structure prediction
+
+#Created a cheap pre-emptible VM instance on GCP
+	#
