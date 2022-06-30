@@ -4,7 +4,8 @@
 -
 -
 
-#Edited the run_alphafold.py file to separate the MSA search and structure prediction
+
+our continer registry is gcr.io/qp-hcls-capability-2021-07
 
 #Created a cheap pre-emptible VM instance on GCP with http and https allowed
 	#udo apt-get update
@@ -13,11 +14,18 @@
 	#git clone https://github.com/deepmind/alphafold.git
 	#make changes to the run_alphafold.py file for separate MSA and Structure
 	#make changes in the docker file and commend out the last 2 commands
+	#make changes in the dockerfile, comment out the pip install upgrade jax and jaxlib command and replace it with 
+		pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+	*****I have already made the above changes and pushed to a git repo. 
+	     https://github.com/Tehemton/alphafold_test.git
+	     will push to our gitlab quantiphi private repos once I have the access
 	#cd alphafold/
-	#sudo chmod 666 /var/run/docker.sock
-	#docker build -f docker/Dockerfile -t alphafold .
-	#
-	#
+	# git init
+	# git pull https://github.com/Tehemton/alphafold_test.git
+	# sudo chmod 666 /var/run/docker.sock
+	# docker build -f docker/Dockerfile -t alphafold .
+	# docker tag alphafold us.gcr.io/qp-hcls-capability-2021-07/alphafold:2.2.2_separated
+	# docker push us.gcr.io/qp-hcls-capability-2021-07/alphafold:2.2.2_separated
 	#
 	#
 	#
