@@ -30,8 +30,8 @@ our continer registry is gcr.io/qp-hcls-capability-2021-07
 	cd alphafold/
 		docker build -f docker/Dockerfile -t alphafold .
 		-- to push to docker hub
-			docker tag alphafold tehemton/alphafold-batch:alphafold:2.2.2_separated
-			docker push tehemton/alphafold-batch:alphafold:2.2.2_separated
+			docker tag alphafold tehemton/alphafold-batch:alphafold_2.2.2_separated
+			docker push tehemton/alphafold-batch:alphafold_2.2.2_separated
 		-- to push to gcp container registry
 			gcloud auth configure-docker 
 			docker tag alphafold us.gcr.io/qp-hcls-capability-2021-07/alphafold:2.2.2_separated
