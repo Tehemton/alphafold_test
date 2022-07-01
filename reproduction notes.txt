@@ -15,6 +15,9 @@ our continer registry is gcr.io/qp-hcls-capability-2021-07
 	-- if the above code does not work
 		sudo apt-get install -y docker.io
 	
+	sudo chmod 666 /var/run/docker.sock
+	gcloud auth configure-docker
+	
 	git clone https://github.com/deepmind/alphafold.git
 	-- make changes to the run_alphafold.py file for separate MSA and Structure
 	-- make changes in the docker file and commend out the last 2 commands
@@ -25,15 +28,75 @@ our continer registry is gcr.io/qp-hcls-capability-2021-07
 		https://github.com/Tehemton/alphafold_test.git
 		will push to our gitlab quantiphi private repos once I have the access
 
-	sudo chmod 666 /var/run/docker.sock
+	
 
 	cd alphafold/
 		docker build -f docker/Dockerfile -t alphafold .
 		-- to push to docker hub
 			docker tag alphafold tehemton/alphafold-batch:alphafold_2.2.2_separated
 			docker push tehemton/alphafold-batch:alphafold_2.2.2_separated
-		-- to push to gcp container registry
+		
+		-- use cloud storage and compute instance images to create a custom image (could not get it to work)
+			docker save --output alphafold.tar.gz alphafold:latest
+			gsutil cp alphafold.tar.gz gs://alphafold-bucket-1/
+			-- now in the compute instance image section, create an image using this .tar.gz file
+
+		-- to push to gcp container registry. No way to create compute engine images from here as well.
+			-- enable container registry
+			docker tag alphafold us.gcr.io/vertex-test-1/alphafold_t1:2.2.2_split_processes
+			gcloud auth configure-docker
+			docker push us.gcr.io/vertex-test-1/alphafold_t1:2.2.2_split_processes
+
+		-- do not use the bloody artifact registry. No way to create custom image from artifact registry docker images. Plus acceess control is unnecessarily messy
+		-- to push to gcp artifact registry
+			-- initialize artifact registry
+			-- create repository
+			-- grant the compute engine service account admin/writer access to this repo (have not been able to do this yet, I granted allUser access)
+			-- stop the compute engine instance and run the below code (change instance name and zone)
+				gcloud compute instances set-service-account instance-1 --scopes=storage-rw --zone=us-central1-a
+			-- restart the compute engine instance 
+			
 			gcloud auth configure-docker 
+			docker tag alphafold us-central1-docker.pkg.dev/vertex-test-1/alphafold-container-registry/alphafold_2.2.2_split_processes
+			docker push us-central1-docker.pkg.dev/vertex-test-1/alphafold-container-registry/alphafold_2.2.2_split_processes
+			
 			docker tag alphafold us.gcr.io/qp-hcls-capability-2021-07/alphafold:2.2.2_separated
 			docker push us.gcr.io/qp-hcls-capability-2021-07/alphafold:2.2.2_separated
+
+
 	
+# create new instance with 2.6tb ssd pd and custom image tehemton/alphafold-batch:alphafold_2.2.2_separated
+# attach a 2.6tb ssd
+-- ssh into the new VM
+-- wait for the container to start
+--check container status using 
+	docker container ps
+-- go into the container using
+	docker exec -it [CONTAINER_NAME] bash
+
+-- install download dependencies
+	sudo apt-get update
+	sudo apt-get install rsync
+	sudo apt-get install aria2
+
+--now to mount the persistent disk
+	-- https://cloud.google.com/compute/docs/disks/add-persistent-disk?&_ga=2.137279984.-1390412617.1647495718#formatting
+	-- identify the attached persistent drive using:
+	sudo lsblk
+
+	-- us the below command with the drive name identified above to format it
+	sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/[device-name]
+
+	-- Create a directory that serves as the mount point for the new disk on the VM. You can use any directory. The following creates directory under /mnt/disks/.
+	sudo mkdir -p /mnt/disks/prot_db
+
+	-- now mount it 
+	sudo mount -o discard,defaults /dev/[DEVICE_NAME] /mnt/disks/prot_db
+
+	-- configure read write permissions
+	sudo chmod a+w /mnt/disks/prot_db
+
+-- now to download the data
+	sed -i -e 's/\r$//' /app/alphafold/scripts/download_all_data.sh
+	./app/alphafold/scripts/download_all_data.sh [PATH_TO_PROT_DB_PERSISTENT_DRIVE]
+
