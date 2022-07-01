@@ -32,6 +32,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   wget \
   && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get install -y rsync
+RUN apt-get install -y aria2
+
 # Compile HHsuite from source.
 RUN git clone --branch v3.3.0 https://github.com/soedinglab/hh-suite.git /tmp/hh-suite \
     && mkdir /tmp/hh-suite/build \

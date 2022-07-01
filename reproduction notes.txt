@@ -73,6 +73,7 @@ our continer registry is gcr.io/qp-hcls-capability-2021-07
 	docker container ps
 -- go into the container using
 	docker exec -it [CONTAINER_NAME] bash
+	or docker attach [CONTAINER_NAME]
 
 -- install download dependencies
 	sudo apt-get update
