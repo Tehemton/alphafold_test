@@ -71,14 +71,22 @@ our continer registry is gcr.io/qp-hcls-capability-2021-07
 -- wait for the container to start
 --check container status using 
 	docker container ps
+-- format the new drive as per instructions below and mount
 -- go into the container using
 	docker exec -it [CONTAINER_NAME] bash
 	or docker attach [CONTAINER_NAME]
 
+# alternatively you can also manualy docker pull the image from tehemton/alphafold-batch:alphafold_2.2.2_separated
+# attach a 2.2tb ssd
+# ssh into the new VM
+docker pull tehemton/alphafold-batch:alphafold_2.2.2_separated
+-- format the new 2.6tb drive as described below and mount 
+docker run -it -v  tehemton/alphafold-batch:alphafold_2.2.2_separated bash
+
 -- install download dependencies
-	sudo apt-get update
-	sudo apt-get install rsync
-	sudo apt-get install aria2
+	apt-get update
+	apt-get install rsync
+	apt-get install aria2
 
 --now to mount the persistent disk
 	-- https://cloud.google.com/compute/docs/disks/add-persistent-disk?&_ga=2.137279984.-1390412617.1647495718#formatting
@@ -98,6 +106,5 @@ our continer registry is gcr.io/qp-hcls-capability-2021-07
 	sudo chmod a+w /mnt/disks/prot_db
 
 -- now to download the data
-	sed -i -e 's/\r$//' /app/alphafold/scripts/download_all_data.sh
 	./app/alphafold/scripts/download_all_data.sh [PATH_TO_PROT_DB_PERSISTENT_DRIVE]
 
