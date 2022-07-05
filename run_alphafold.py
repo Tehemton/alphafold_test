@@ -429,7 +429,7 @@ def main(argv):
             amber_relaxer=amber_relaxer,
             benchmark=FLAGS.benchmark,
             random_seed=random_seed,
-            process_type=FLAgs.process_type)
+            process_type=FLAGS.process_type)
 
 
 if __name__ == '__main__':

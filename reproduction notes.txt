@@ -34,6 +34,7 @@ our continer registry is gcr.io/qp-hcls-capability-2021-07
 		docker build -f docker/Dockerfile -t alphafold .
 		-- to push to docker hub
 			docker tag alphafold tehemton/alphafold-batch:alphafold_2.2.2_separated
+			docker login docker.io
 			docker push tehemton/alphafold-batch:alphafold_2.2.2_separated
 		
 		-- use cloud storage and compute instance images to create a custom image (could not get it to work)
@@ -81,30 +82,77 @@ our continer registry is gcr.io/qp-hcls-capability-2021-07
 # ssh into the new VM
 docker pull tehemton/alphafold-batch:alphafold_2.2.2_separated
 -- format the new 2.6tb drive as described below and mount 
-docker run -it -v  tehemton/alphafold-batch:alphafold_2.2.2_separated bash
-
--- install download dependencies
-	apt-get update
-	apt-get install rsync
-	apt-get install aria2
-
---now to mount the persistent disk
 	-- https://cloud.google.com/compute/docs/disks/add-persistent-disk?&_ga=2.137279984.-1390412617.1647495718#formatting
-	-- identify the attached persistent drive using:
+	-- the disk is mounted as alphafold_storage/
+	-- in the root diretory, make the following folders inside alphafold_storage
+		fasta_files		prot_db		results
+
+docker run -it -v /alphafold_storage/:/alphafold_storage tehemton/alphafold-batch:alphafold_2.2.2_separated bash
+	-- install download dependencies
+		apt-get update
+		apt-get install rsync -y
+		apt-get install aria2 -y
+		apt-get install tmux
+		apt-get install nano
+
+	-- run the database download
+		app/alphafold/scripts/download_all_data.sh alphafold_storage/prot_db/
+
+	-- the following database download scripts throw a gunzip error. 
+		It is better to download these through the script and decompress manually using gz -d [FILENAME]
+		mgnify
+		small_bfd
+		uniprot
+		uniref90 
+
+
+############################################################
+now to run predictions
+############################################################
+
+Create 2 VM instances
+	-- alphafold-feature-search = 16 CPUs and 0 GPU
+	-- alphafold-structure-prediction = 04 CPU and A100 GPU
+
+-- ssh into both and install dependencies for one time setup
+	sudo apt-get update
+	sudo apt-get install tmux -y
+	sudo apt-get install nano -y
+	-- cd to home
+	sudo mkdir /alphafold_storage/
+	sudo apt-get install -y docker.io
+	sudo chmod 666 /var/run/docker.sock
+	docker pull tehemton/alphafold-batch:alphafold_2.2.2_separated
+
+
+--now to run either the features or structure prediction part, 
+	-- make sure the pd is not being used by another VM.
+	-- attach the persistent disk as shown below. Through cloud shell. can be done through VM is the service account has the correct permissions
+	gcloud compute instances attach-disk alphafold-feature-search --disk alphafold-full-protein-db --zone=us-central1-a
+	or
+	gcloud compute instances attach-disk alphafold-structure-prediction --disk alphafold-full-protein-db --zone=us-central1-a
+
+	-- once attached, start the VM and ssh into it
+	-- run the below command to get the disk name
 	sudo lsblk
+	-- run the below command to mount the disk
+	sudo mount -o discard,defaults /dev/DISK_NAME /alphafold_storage/
+	sudo chmod a+w /alphafold_storage
 
-	-- us the below command with the drive name identified above to format it
-	sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/[device-name]
+	-- now you can simply run the docker container, attach the disk as a volume. Make sure to tmux first
+	tmux new -s protRuntime
+	--to reconnect to a tmux runtime run
+	tmux a -t protRuntime
 
-	-- Create a directory that serves as the mount point for the new disk on the VM. You can use any directory. The following creates directory under /mnt/disks/.
-	sudo mkdir -p /mnt/disks/prot_db
+	-- upload the fsta files to the correct location
 
-	-- now mount it 
-	sudo mount -o discard,defaults /dev/[DEVICE_NAME] /mnt/disks/prot_db
+	docker run -it -v /alphafold_storage/:/alphafold_storage tehemton/alphafold-batch:alphafold_2.2.2_separated bash
 
-	-- configure read write permissions
-	sudo chmod a+w /mnt/disks/prot_db
+	-- once inside the docker container, run the pipeline
 
--- now to download the data
-	./app/alphafold/scripts/download_all_data.sh [PATH_TO_PROT_DB_PERSISTENT_DRIVE]
-
+	-- on completion of the process, you can download the results and exit the container
+	-- then before exiting the VM, always unmount and detach the disk
+	sudo umount /dev/DISK_NAME
+	gcloud compute instances detach-disk alphafold-feature-search --disk=alphafold-full-protein-db --zone=us-central1-a
+	or
+	gcloud compute instances detach-disk alphafold-structure-prediction --disk alphafold-full-protein-db --zone=us-central1-a
