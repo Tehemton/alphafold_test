@@ -191,7 +191,7 @@ def predict_structure(
                 'The features.pkl file does not exist in the output folder.')
         else:
             with open(features_output_path, 'r') as f:
-                feature_dict = pickle.load(f, protocol=4)
+                feature_dict = pickle.load(f)
 
         if not os.path.exists(timings_output_path):
             raise OSError(

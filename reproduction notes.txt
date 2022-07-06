@@ -111,8 +111,8 @@ now to run predictions
 ############################################################
 
 Create 2 VM instances
-	-- alphafold-feature-search = 16 CPUs and 0 GPU
-	-- alphafold-structure-prediction = 04 CPU and A100 GPU
+	-- alphafold-feature-search = 16 CPUs and 0 GPU (e2-standard-16)
+	-- alphafold-structure-prediction = 04 CPU and A100 GPU (a2-highgpu-1g)
 
 -- ssh into both and install dependencies for one time setup
 	sudo apt-get update
@@ -136,7 +136,7 @@ Create 2 VM instances
 	-- run the below command to get the disk name
 	sudo lsblk
 	-- run the below command to mount the disk
-	sudo mount -o discard,defaults /dev/DISK_NAME /alphafold_storage/
+	sudo mount -o discard,defaults /dev/sdb /alphafold_storage/
 	sudo chmod a+w /alphafold_storage
 
 	-- now you can simply run the docker container, attach the disk as a volume. Make sure to tmux first
@@ -152,7 +152,7 @@ Create 2 VM instances
 
 	-- on completion of the process, you can download the results and exit the container
 	-- then before exiting the VM, always unmount and detach the disk
-	sudo umount /dev/DISK_NAME
+	sudo umount /dev/sdb
 	gcloud compute instances detach-disk alphafold-feature-search --disk=alphafold-full-protein-db --zone=us-central1-a
 	or
 	gcloud compute instances detach-disk alphafold-structure-prediction --disk alphafold-full-protein-db --zone=us-central1-a
