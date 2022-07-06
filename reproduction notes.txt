@@ -146,7 +146,7 @@ Create 2 VM instances
 
 	-- upload the fsta files to the correct location
 
-	docker run -it -v /alphafold_storage/:/alphafold_storage tehemton/alphafold-batch:alphafold_2.2.2_separated bash
+	docker run -it --gpus all -v /alphafold_storage/:/alphafold_storage tehemton/alphafold-batch:alphafold_2.2.2_separated bash
 
 	-- once inside the docker container, run the pipeline
 
@@ -156,3 +156,37 @@ Create 2 VM instances
 	gcloud compute instances detach-disk alphafold-feature-search --disk=alphafold-full-protein-db --zone=us-central1-a
 	or
 	gcloud compute instances detach-disk alphafold-structure-prediction --disk alphafold-full-protein-db --zone=us-central1-a
+
+
+python app/alphafold/run_alphafold.py \
+--fasta_paths=/alphafold_storage/fasta_files/1A2K.fasta \
+--output_dir=/alphafold_storage/results/ \
+--data_dir=/alphafold_storage/prot_db/ \
+--uniref90_database_path=/alphafold_storage/prot_db/uniref90/uniref90.fasta \
+--mgnify_database_path=/alphafold_storage/prot_db/mgnify/mgy_clusters_2018_12.fa \
+--bfd_database_path=/alphafold_storage/prot_db/bfd/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt \
+--uniclust30_database_path=/alphafold_storage/prot_db/uniclust30/uniclust30_2018_08/uniclust30_2018_08 \
+--uniprot_database_path=/alphafold_storage/prot_db/uniprot/ \
+--pdb_seqres_database_path=/alphafold_storage/prot_db/pdb_seqres/pdb_seqres.txt \
+--template_mmcif_dir=/alphafold_storage/prot_db/pdb_mmcif/mmcif_files/ \
+--obsolete_pdbs_path=/alphafold_storage/prot_db/pdb_mmcif/obsolete.dat \
+--max_template_date=2000-01-01 \
+--use_gpu_relax=False \
+--model_preset=multimer \
+--process_type=features
+
+python app/alphafold/run_alphafold.py \
+--fasta_paths=/alphafold_storage/fasta_files/setup_test.fasta \
+--data_dir=/alphafold_storage/prot_db/ \
+--output_dir=/alphafold_storage/results/ \
+--uniref90_database_path=/alphafold_storage/prot_db/uniref90/uniref90.fasta \
+--mgnify_database_path=/alphafold_storage/prot_db/mgnify/mgy_clusters_2018_12.fa \
+--bfd_database_path=/alphafold_storage/prot_db/bfd/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt \
+--uniclust30_database_path=/alphafold_storage/prot_db/uniclust30/uniclust30_2018_08/uniclust30_2018_08 \
+--pdb70_database_path=/alphafold_storage/prot_db/pdb70/pdb70 \
+--template_mmcif_dir=/alphafold_storage/prot_db/pdb_mmcif/mmcif_files/ \
+--obsolete_pdbs_path=/alphafold_storage/prot_db/pdb_mmcif/obsolete.dat \
+--max_template_date=2000-01-01 \
+--use_gpu_relax=True \
+--model_preset=monomer \
+--process_type=structures
