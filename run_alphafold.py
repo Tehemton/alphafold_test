@@ -182,7 +182,7 @@ def predict_structure(
         timings['features'] = time.time() - t_0
         # Write out features as a pickled dictionary.
         with open(features_output_path, 'wb') as f:
-            pickle.dump(feature_dict, f, protocol=4)
+            pickle.dump(feature_dict, f)
 
     # speific to structure prediction only with precomputed features in a previous run
     else:
@@ -190,7 +190,7 @@ def predict_structure(
             raise OSError(
                 'The features.pkl file does not exist in the output folder.')
         else:
-            with open(features_output_path, 'r') as f:
+            with open(features_output_path, 'rb') as f:
                 feature_dict = pickle.load(f)
 
         if not os.path.exists(timings_output_path):
