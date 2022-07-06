@@ -163,8 +163,9 @@ def predict_structure(
     """Predicts structure using AlphaFold for the given sequence."""
     logging.info('Predicting %s', fasta_name)
     timings = {}
-    timings_output_path = os.path.join(output_dir, 'timings.json')
     output_dir = os.path.join(output_dir_base, fasta_name)
+    timings_output_path = os.path.join(output_dir, 'timings.json')
+
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     msa_output_dir = os.path.join(output_dir, 'msas')
