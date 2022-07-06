@@ -197,9 +197,8 @@ def predict_structure(
             raise OSError(
                 'The timings.json file does not exist in the output folder.')
         else:
-            with open(timings_output_path, 'w') as f:
-                timings['features'] = f.read(
-                    json.loads(timings, indent=4))['features']
+            with open(timings_output_path, 'r') as f:
+                timings['features'] = json.loads(f.read())['features']
 
     if process_type in ('full', 'structures'):
         unrelaxed_pdbs = {}
