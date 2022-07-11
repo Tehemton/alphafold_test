@@ -118,9 +118,12 @@ Create 2 VM instances
 	sudo apt-get update
 	sudo apt-get install tmux -y
 	sudo apt-get install nano -y
+	sudo apt-get install runc -y
 	-- cd to home
 	sudo mkdir /alphafold_storage/
-	sudo apt-get install -y docker.io
+	## best way to install latest docker https://docs.docker.com/engine/install/debian/
+	## use the above process instead of this one sudo apt-get install -y docker.io
+	systemctl start docker
 	sudo chmod 666 /var/run/docker.sock
 	docker pull tehemton/alphafold-batch:alphafold_2.2.2_separated
 
@@ -128,7 +131,7 @@ Create 2 VM instances
 --now to run either the features or structure prediction part, 
 	-- make sure the pd is not being used by another VM.
 	-- attach the persistent disk as shown below. Through cloud shell. can be done through VM is the service account has the correct permissions
-	gcloud compute instances attach-disk alphafold-feature-search --disk alphafold-full-protein-db --zone=us-central1-a
+	gcloud compute instances attach-disk alphafold-feature-search-16 --disk alphafold-full-protein-db --zone=us-central1-a
 	or
 	gcloud compute instances attach-disk alphafold-structure-prediction --disk alphafold-full-protein-db --zone=us-central1-a
 
@@ -140,12 +143,14 @@ Create 2 VM instances
 	sudo chmod a+w /alphafold_storage
 
 	-- now you can simply run the docker container, attach the disk as a volume. Make sure to tmux first
-	tmux new -s protRuntime
+	tmux new -s prot
 	--to reconnect to a tmux runtime run
-	tmux a -t protRuntime
+	tmux a -t prot
 
 	-- upload the fsta files to the correct location
 
+	docker run -it -v /alphafold_storage/:/alphafold_storage tehemton/alphafold-batch:alphafold_2.2.2_separated bash
+	or
 	docker run -it --gpus all -v /alphafold_storage/:/alphafold_storage tehemton/alphafold-batch:alphafold_2.2.2_separated bash
 
 	-- once inside the docker container, run the pipeline
@@ -153,7 +158,7 @@ Create 2 VM instances
 	-- on completion of the process, you can download the results and exit the container
 	-- then before exiting the VM, always unmount and detach the disk
 	sudo umount /dev/sdb
-	gcloud compute instances detach-disk alphafold-feature-search --disk=alphafold-full-protein-db --zone=us-central1-a
+	gcloud compute instances detach-disk alphafold-feature-search-16 --disk=alphafold-full-protein-db --zone=us-central1-a
 	or
 	gcloud compute instances detach-disk alphafold-structure-prediction --disk alphafold-full-protein-db --zone=us-central1-a
 
@@ -166,14 +171,14 @@ python app/alphafold/run_alphafold.py \
 --mgnify_database_path=/alphafold_storage/prot_db/mgnify/mgy_clusters_2018_12.fa \
 --bfd_database_path=/alphafold_storage/prot_db/bfd/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt \
 --uniclust30_database_path=/alphafold_storage/prot_db/uniclust30/uniclust30_2018_08/uniclust30_2018_08 \
---uniprot_database_path=/alphafold_storage/prot_db/uniprot/ \
+--uniprot_database_path=/alphafold_storage/prot_db/uniprot/uniprot.fasta \
 --pdb_seqres_database_path=/alphafold_storage/prot_db/pdb_seqres/pdb_seqres.txt \
 --template_mmcif_dir=/alphafold_storage/prot_db/pdb_mmcif/mmcif_files/ \
 --obsolete_pdbs_path=/alphafold_storage/prot_db/pdb_mmcif/obsolete.dat \
 --max_template_date=2000-01-01 \
---use_gpu_relax=False \
+--use_gpu_relax=True \
 --model_preset=multimer \
---process_type=features
+--process_type=full
 
 python app/alphafold/run_alphafold.py \
 --fasta_paths=/alphafold_storage/fasta_files/setup_test.fasta \
@@ -189,4 +194,8 @@ python app/alphafold/run_alphafold.py \
 --max_template_date=2000-01-01 \
 --use_gpu_relax=True \
 --model_preset=monomer \
---process_type=structures
+--process_type=full
+
+
+the original alphafold throws AttributeError: module 'jaxlib.pocketfft' has no attribute 'pocketfft' error 
+my alphafold image throws some vague error on multimers: simtk.openmm.OpenMMException: Particle coordinate is nan

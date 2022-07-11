@@ -192,6 +192,7 @@ def predict_structure(
         else:
             with open(features_output_path, 'rb') as f:
                 feature_dict = pickle.load(f)
+            print('features loaded')
 
         if not os.path.exists(timings_output_path):
             raise OSError(
