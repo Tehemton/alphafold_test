@@ -40,14 +40,14 @@ fi
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
 echo "Downloading AlphaFold parameters..."
-#bash "${SCRIPT_DIR}/download_alphafold_params.sh" "${DOWNLOAD_DIR}"
+bash "${SCRIPT_DIR}/download_alphafold_params.sh" "${DOWNLOAD_DIR}"
 
 if [[ "${DOWNLOAD_MODE}" = reduced_dbs ]] ; then
   echo "Downloading Small BFD..."
-  #bash "${SCRIPT_DIR}/download_small_bfd.sh" "${DOWNLOAD_DIR}"
+  bash "${SCRIPT_DIR}/download_small_bfd.sh" "${DOWNLOAD_DIR}"
 else
   echo "Downloading BFD..."
-  #bash "${SCRIPT_DIR}/download_bfd.sh" "${DOWNLOAD_DIR}"
+  bash "${SCRIPT_DIR}/download_bfd.sh" "${DOWNLOAD_DIR}"
 fi
 
 echo "Downloading PDB70..."
