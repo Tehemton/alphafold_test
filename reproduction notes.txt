@@ -153,6 +153,9 @@ Create 2 VM instances
 	or
 	docker run -it --gpus all -v /alphafold_storage/:/alphafold_storage tehemton/alphafold-batch:alphafold_2.2.2_separated bash
 
+	-- to log anything to a file, use 
+	SOME_COMMAND 2>&1 | tee alphafold_storage/results/debug.txt
+
 	-- once inside the docker container, run the pipeline
 
 	-- on completion of the process, you can download the results and exit the container
@@ -179,6 +182,22 @@ python app/alphafold/run_alphafold.py \
 --use_gpu_relax=True \
 --model_preset=multimer \
 --process_type=full
+
+python app/alphafold/run_alphafold_og.py \
+--fasta_paths=/alphafold_storage/fasta_files/1A2K.fasta \
+--output_dir=/alphafold_storage/results/ \
+--data_dir=/alphafold_storage/prot_db/ \
+--uniref90_database_path=/alphafold_storage/prot_db/uniref90/uniref90.fasta \
+--mgnify_database_path=/alphafold_storage/prot_db/mgnify/mgy_clusters_2018_12.fa \
+--bfd_database_path=/alphafold_storage/prot_db/bfd/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt \
+--uniclust30_database_path=/alphafold_storage/prot_db/uniclust30/uniclust30_2018_08/uniclust30_2018_08 \
+--uniprot_database_path=/alphafold_storage/prot_db/uniprot/uniprot.fasta \
+--pdb_seqres_database_path=/alphafold_storage/prot_db/pdb_seqres/pdb_seqres.txt \
+--template_mmcif_dir=/alphafold_storage/prot_db/pdb_mmcif/mmcif_files/ \
+--obsolete_pdbs_path=/alphafold_storage/prot_db/pdb_mmcif/obsolete.dat \
+--max_template_date=2000-01-01 \
+--use_gpu_relax=True \
+--model_preset=multimer
 
 python app/alphafold/run_alphafold.py \
 --fasta_paths=/alphafold_storage/fasta_files/setup_test.fasta \
