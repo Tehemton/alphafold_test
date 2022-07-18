@@ -27,11 +27,11 @@ our continer registry is gcr.io/qp-hcls-capability-2021-07
 
 		sudo apt-get update
 		sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
-		
+
 	-- if the above code does not work
 		sudo apt-get install -y docker.io
-	
 	sudo chmod 666 /var/run/docker.sock
+
 	gcloud auth configure-docker
 	
 	git clone https://github.com/deepmind/alphafold.git
@@ -81,17 +81,6 @@ our continer registry is gcr.io/qp-hcls-capability-2021-07
 			docker push us.gcr.io/qp-hcls-capability-2021-07/alphafold:2.2.2_separated
 
 
-	
-# create new instance with 2.6tb ssd pd and custom image tehemton/alphafold-batch:alphafold_2.2.2_separated
-# attach a 2.6tb ssd
--- ssh into the new VM
--- wait for the container to start
---check container status using 
-	docker container ps
--- format the new drive as per instructions below and mount
--- go into the container using
-	docker exec -it [CONTAINER_NAME] bash
-	or docker attach [CONTAINER_NAME]
 
 # alternatively you can also manualy docker pull the image from tehemton/alphafold-batch:alphafold_2.2.2_separated
 # attach a 2.2tb ssd
@@ -105,11 +94,7 @@ docker pull tehemton/alphafold-batch:alphafold_2.2.2_separated
 
 docker run -it -v /alphafold_storage/:/alphafold_storage tehemton/alphafold-batch:alphafold_2.2.2_separated bash
 	-- install download dependencies
-		apt-get update
-		apt-get install rsync -y
-		apt-get install aria2 -y
-		apt-get install tmux
-		apt-get install nano
+		apt-get update && apt-get install rsync -y && apt-get install aria2 -y && apt-get install tmux -y && apt-get install nano -y
 
 	-- run the database download
 		app/alphafold/scripts/download_all_data.sh alphafold_storage/prot_db/
@@ -131,10 +116,8 @@ Create 2 VM instances
 	-- alphafold-structure-prediction = 04 CPU and A100 GPU (a2-highgpu-1g)
 
 -- ssh into both and install dependencies for one time setup
-	sudo apt-get update
-	sudo apt-get install tmux -y
-	sudo apt-get install nano -y
-	sudo apt-get install runc -y
+	sudo apt-get update && apt-get install rsync -y && apt-get install aria2 -y && apt-get install tmux -y && apt-get install nano -y
+	
 	-- cd to home
 	sudo mkdir /alphafold_storage/
 	## best way to install latest docker https://docs.docker.com/engine/install/debian/
@@ -147,9 +130,9 @@ Create 2 VM instances
 --now to run either the features or structure prediction part, 
 	-- make sure the pd is not being used by another VM.
 	-- attach the persistent disk as shown below. Through cloud shell. can be done through VM is the service account has the correct permissions
-	gcloud compute instances attach-disk alphafold-feature-search-16 --disk alphafold-full-protein-db --zone=us-central1-a
+	gcloud compute instances attach-disk alphafold-cpu-feature-search --disk alphafold-storage-disk --zone=us-central1-a
 	or
-	gcloud compute instances attach-disk alphafold-structure-prediction --disk alphafold-full-protein-db --zone=us-central1-a
+	gcloud compute instances attach-disk alphafold-gpu-structure-prediction --disk alphafold-storage-disk --zone=us-central1-a
 
 	-- once attached, start the VM and ssh into it
 	-- run the below command to get the disk name
