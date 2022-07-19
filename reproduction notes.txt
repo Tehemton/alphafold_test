@@ -112,12 +112,11 @@ now to run predictions
 ############################################################
 
 Create 2 VM instances
-	-- alphafold-feature-search = 16 CPUs and 0 GPU (e2-standard-16)
+	-- alphafold-feature-search = 16 CPUs and 0 GPU (e2-standard-16)`
 	-- alphafold-structure-prediction = 04 CPU and A100 GPU (a2-highgpu-1g)
 
 -- ssh into both and install dependencies for one time setup
-	sudo apt-get update && apt-get install rsync -y && apt-get install aria2 -y && apt-get install tmux -y && apt-get install nano -y
-	
+	sudo apt-get update && sudo apt-get install tmux -y && sudo apt-get install nano -y && sudo apt-get install runc -y
 	-- cd to home
 	sudo mkdir /alphafold_storage/
 	## best way to install latest docker https://docs.docker.com/engine/install/debian/
@@ -138,8 +137,7 @@ Create 2 VM instances
 	-- run the below command to get the disk name
 	sudo lsblk
 	-- run the below command to mount the disk
-	sudo mount -o discard,defaults /dev/sdb /alphafold_storage/
-	sudo chmod a+w /alphafold_storage
+	sudo mount -o discard,defaults /dev/sdb /alphafold_storage/ && sudo chmod a+w /alphafold_storage
 
 	-- now you can simply run the docker container, attach the disk as a volume. Make sure to tmux first
 	tmux new -s prot
@@ -150,16 +148,22 @@ Create 2 VM instances
 
 	docker run -it -v /alphafold_storage/:/alphafold_storage tehemton/alphafold-batch:alphafold_2.2.2_separated bash
 	or
+	docker run -it -v /alphafold_storage/:/alphafold_storage -p 8888:8888 tehemton/alphafold-batch:alphafold_2.2.2_separated bash
+	jupyter lab --ip 0.0.0.0 --no-browser --allow-root
+	or
 	docker run -it --gpus all -v /alphafold_storage/:/alphafold_storage tehemton/alphafold-batch:alphafold_2.2.2_separated bash
+
+	-- to log anything to a file, use 
+	SOME_COMMAND 2>&1 | tee alphafold_storage/results/debug.txt
 
 	-- once inside the docker container, run the pipeline
 
 	-- on completion of the process, you can download the results and exit the container
 	-- then before exiting the VM, always unmount and detach the disk
 	sudo umount /dev/sdb
-	gcloud compute instances detach-disk alphafold-feature-search-16 --disk=alphafold-full-protein-db --zone=us-central1-a
+	gcloud compute instances detach-disk alphafold-cpu-feature-search --disk alphafold-storage-disk --zone=us-central1-a
 	or
-	gcloud compute instances detach-disk alphafold-structure-prediction --disk alphafold-full-protein-db --zone=us-central1-a
+	gcloud compute instances detach-disk alphafold-structure-prediction --disk alphafold-storage-disk --zone=us-central1-a
 
 
 python app/alphafold/run_alphafold.py \
@@ -178,6 +182,24 @@ python app/alphafold/run_alphafold.py \
 --use_gpu_relax=True \
 --model_preset=multimer \
 --process_type=full
+
+python app/alphafold/run_alphafold.py \
+--fasta_paths=/alphafold_storage/fasta_files/1A2K.fasta \
+--output_dir=/alphafold_storage/results/ \
+--data_dir=/alphafold_storage/prot_db/ \
+--uniref90_database_path=/alphafold_storage/prot_db/uniref90/uniref90.fasta \
+--mgnify_database_path=/alphafold_storage/prot_db/mgnify/mgy_clusters_2018_12.fa \
+--bfd_database_path=/alphafold_storage/prot_db/bfd/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt \
+--uniclust30_database_path=/alphafold_storage/prot_db/uniclust30/uniclust30_2018_08/uniclust30_2018_08 \
+--uniprot_database_path=/alphafold_storage/prot_db/uniprot/uniprot.fasta \
+--pdb_seqres_database_path=/alphafold_storage/prot_db/pdb_seqres/pdb_seqres.txt \
+--template_mmcif_dir=/alphafold_storage/prot_db/pdb_mmcif/mmcif_files/ \
+--obsolete_pdbs_path=/alphafold_storage/prot_db/pdb_mmcif/obsolete.dat \
+--max_template_date=2000-01-01 \
+--use_gpu_relax=True \
+--model_preset=multimer \
+--process_type=structures
+
 
 python app/alphafold/run_alphafold.py \
 --fasta_paths=/alphafold_storage/fasta_files/setup_test.fasta \
