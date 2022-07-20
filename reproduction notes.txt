@@ -184,7 +184,7 @@ python app/alphafold/run_alphafold.py \
 --process_type=full
 
 python app/alphafold/run_alphafold.py \
---fasta_paths=/alphafold_storage/fasta_files/1A2K.fasta \
+--fasta_paths=/alphafold_storage/fasta_files/1ACB.fasta,/alphafold_storage/fasta_files/1DQJ.fasta,/alphafold_storage/fasta_files/6A0Z.fasta,/alphafold_storage/fasta_files/6B0S.fasta \
 --output_dir=/alphafold_storage/results/ \
 --data_dir=/alphafold_storage/prot_db/ \
 --uniref90_database_path=/alphafold_storage/prot_db/uniref90/uniref90.fasta \
@@ -198,7 +198,7 @@ python app/alphafold/run_alphafold.py \
 --max_template_date=2000-01-01 \
 --use_gpu_relax=True \
 --model_preset=multimer \
---process_type=structures
+--process_type=features
 
 
 python app/alphafold/run_alphafold.py \
