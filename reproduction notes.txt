@@ -198,7 +198,7 @@ python app/alphafold/run_alphafold.py \
 --max_template_date=2000-01-01 \
 --use_gpu_relax=True \
 --model_preset=multimer \
---process_type=features
+--process_type=structures
 
 
 python app/alphafold/run_alphafold.py \
